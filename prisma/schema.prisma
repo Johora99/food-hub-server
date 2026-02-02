@@ -1,0 +1,44 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Meal {
+  id          String     @id @default(uuid())
+  title       String     @db.VarChar(225)
+  content     String     @db.Text
+  category    Category
+  price       Int
+  image       String
+  isFeatured  Boolean    @default(false)
+  isAvailable Boolean    @default(true)
+  views       Int        @default(0)
+  rating      Float      @default(0)
+  providerId  String
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+}
+
+
+enum Category {
+  Bangladeshi
+  Indian
+  Chinese
+  Italian
+  Thai
+  Mexican
+  Japanese
+  Korean
+  MiddleEastern
+  Continental
+}
