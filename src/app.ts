@@ -1,6 +1,6 @@
 import express from "express"
 import cors from "cors"
-import { providerRoute } from "./modules/provider/provider.route";
+import { providerRoute } from "./modules/meal/meal.route";
 
 const app = express();
 app.use(express.json());
@@ -13,6 +13,6 @@ app.get('/', (req, res)=>{
 })
 
 
-app.use('/api/provider', providerRoute)
+app.use('/api', providerRoute)
 
 export default app;
