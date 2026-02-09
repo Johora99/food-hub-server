@@ -3,9 +3,11 @@ import type { Meal } from "../../types/meal.type";
 
 
 
-const createMeals = async(data: Meal)=>{
+const createMeals = async(data: Meal, providerId: string)=>{
    const result = await prisma.meal.create({
-    data: data
+    data: {
+      ...data, providerId
+    }
    })
    return result;
 }
@@ -13,7 +15,8 @@ const createMeals = async(data: Meal)=>{
 const getMealById = async(id: string)=>{
   const mealData = await prisma.meal.findUniqueOrThrow({
     where: {
-      id: id
+      id: id,
+      
     },
     select: {
     id: true
@@ -24,7 +27,8 @@ const getMealById = async(id: string)=>{
   }
   const result = await prisma.meal.findUnique({
     where: {
-      id: id
+      id: id,
+    
     }
   })
   return result;

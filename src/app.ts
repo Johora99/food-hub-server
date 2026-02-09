@@ -3,6 +3,8 @@ import cors from "cors"
 import { providerRoute } from "./modules/meal/meal.route";
 import { toNodeHandler } from "better-auth/node";
 import { auth } from "./lib/auth";
+import { userRoute } from "./modules/user/user.route";
+
 
 const app = express();
 app.all("/api/auth/*splat", toNodeHandler(auth));
@@ -20,5 +22,5 @@ app.get('/', (req, res)=>{
 
 
 app.use('/api', providerRoute)
-
+app.use('/api/admin/users', userRoute)
 export default app;

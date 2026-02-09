@@ -4,7 +4,13 @@ import { providerService } from "./meal.service";
 
 const createMeals: RequestHandler = async(req, res)=>{
  try {
-   const result = await providerService.createMeals(req.body);
+    if(!req.user){
+    return res.status(400).json({
+    success: false,
+    message: "Unauthorized"
+   })
+  }
+   const result = await providerService.createMeals(req.body, req.user?.id as string);
     res.status(201).json({
     success: true,
     message: "Meal added successfully.",
@@ -18,8 +24,15 @@ const createMeals: RequestHandler = async(req, res)=>{
    })
  }
 }
+
 const getMealById:RequestHandler = async(req, res)=>{
   try {
+      if(!req.user){
+    return res.status(400).json({
+    success: false,
+    message: "Unauthorized"
+   })
+  }
     const {id} = req.params;
     const result = await providerService.getMealById(id as string);
     res.status(200).json({
@@ -29,6 +42,7 @@ const getMealById:RequestHandler = async(req, res)=>{
   } catch (error) {
     res.status(500).json({
     success: false,
+    message: "Something went wrong. Please try again.",
     details: error
    })
   }

@@ -15,3 +15,4 @@ export interface Meal {
   createdAt: Date;
   updatedAt: Date;
 }
+
