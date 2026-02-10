@@ -26,7 +26,7 @@ model Meal {
   rating      Float    @default(0)
   providerId  String
   provider    User     @relation(fields: [providerId], references: [id], onDelete: Cascade)
-
+  orders      Order[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -63,6 +63,8 @@ model User {
   status String? @default("ACTIVE")
 
   meals Meal[]
+  customerOrders Order[] @relation("CustomerOrders")
+  providerOrders Order[] @relation("ProviderOrders")
 
   twoFactorEnabled Boolean?    @default(false)
   twofactors       TwoFactor[]
@@ -136,3 +138,44 @@ model TwoFactor {
   @@index([userId])
   @@map("twoFactor")
 }
+
+
+model Order {
+  id          String   @id @default(uuid())
+  customerId  String
+  customer    User     @relation("CustomerOrders", fields: [customerId], references: [id], onDelete: Cascade)
+
+  mealId      String
+  meal        Meal     @relation(fields: [mealId], references: [id], onDelete: Cascade)
+
+  providerId  String
+  provider    User     @relation("ProviderOrders", fields: [providerId], references: [id], onDelete: Cascade)
+
+  quantity    Int      @default(1)
+  totalPrice  Int
+
+  status      OrderStatus @default(PENDING)
+  paymentStatus PaymentStatus @default(COD)
+
+  address     String
+  phone       String
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("orders")
+}
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  COOKING
+  OUT_FOR_DELIVERY
+  DELIVERED
+  CANCELLED
+}
+
+enum PaymentStatus {
+  PAID
+  COD
+}
+
