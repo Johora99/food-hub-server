@@ -1,3 +1,4 @@
+import { Category } from "../../generated/prisma/enums";
 import { prisma } from "../../lib/prisma";
 import type { Meal } from "../../types/meal.type";
 
@@ -12,6 +13,12 @@ const createMeals = async(data: Meal, providerId: string)=>{
    return result;
 }
 
+const getAllMeals = async()=>{
+  const result = await prisma.meal.findMany({
+    orderBy: { createdAt: "desc" }
+  });
+  return result;
+}
 const getMealById = async(id: string)=>{
   const mealData = await prisma.meal.findUniqueOrThrow({
     where: {
@@ -76,17 +83,24 @@ const updateMale = async(id: string, data: Partial<Meal>)=>{
 }
 
 const updateOrderStatus = async(id: string, data: string)=>{
-  try {
-    
-  } catch (error) {
-    console.log(error)
-  }
+  
 }
 
-export const providerService = {
+
+
+const getAllCategories = async()=>{
+  const result = Object.values(Category);
+  return result;
+}
+
+
+
+export const mealService = {
   createMeals,
+  getAllMeals,
   getMealById,
   deleteMeal,
   updateMale,
   updateOrderStatus,
+  getAllCategories,
 }

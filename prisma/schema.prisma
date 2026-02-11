@@ -20,6 +20,7 @@ model Meal {
   category    Category
   price       Int
   image       String
+  quantity    Int  @default(1)
   isFeatured  Boolean  @default(false)
   isAvailable Boolean  @default(true)
   views       Int      @default(0)
@@ -178,4 +179,5 @@ enum PaymentStatus {
   PAID
   COD
 }
+
 

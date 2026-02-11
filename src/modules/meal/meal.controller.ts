@@ -1,5 +1,6 @@
 import type { RequestHandler } from "express";
-import { providerService } from "./meal.service";
+import { mealService } from "./meal.service";
+
 
 
 const createMeals: RequestHandler = async(req, res)=>{
@@ -10,7 +11,7 @@ const createMeals: RequestHandler = async(req, res)=>{
     message: "Unauthorized"
    })
   }
-   const result = await providerService.createMeals(req.body, req.user?.id as string);
+   const result = await mealService.createMeals(req.body, req.user?.id as string);
     res.status(201).json({
     success: true,
     message: "Meal added successfully.",
@@ -24,7 +25,20 @@ const createMeals: RequestHandler = async(req, res)=>{
    })
  }
 }
-
+const getAllMeals: RequestHandler = async(req, res)=>{
+  try {
+    const result = await mealService.getAllMeals();
+    res.status(200).json({
+    success: true,
+    data: result
+  })
+  } catch (error) {
+    res.status(500).json({
+    success: false,
+    details: error
+   })
+  }
+}
 const getMealById:RequestHandler = async(req, res)=>{
   try {
       if(!req.user){
@@ -34,7 +48,7 @@ const getMealById:RequestHandler = async(req, res)=>{
    })
   }
     const {id} = req.params;
-    const result = await providerService.getMealById(id as string);
+    const result = await mealService.getMealById(id as string);
     res.status(200).json({
       success: true,
       data: result
@@ -51,7 +65,7 @@ const getMealById:RequestHandler = async(req, res)=>{
 const deleteMeal:RequestHandler = async(req, res)=>{
  try {
   const {id} = req.params;
-  const result = await providerService.deleteMeal(id as string);
+  const result = await mealService.deleteMeal(id as string);
   res.status(200).json({
     success: true,
     message: "Meal deleted successfully.",
@@ -69,7 +83,7 @@ const deleteMeal:RequestHandler = async(req, res)=>{
 const updateMale:RequestHandler = async(req, res) =>{
   try {
     const {id} = req.params;
-    const result = await providerService.updateMale(id as string, req.body);
+    const result = await mealService.updateMale(id as string, req.body);
     res.status(200).json({
     success: true,
     message: "Meal updated successfully",
@@ -87,7 +101,22 @@ const updateMale:RequestHandler = async(req, res) =>{
 const updateOrderStatus:RequestHandler = async(req, res)=>{
   try {
     const {id} = req.params;
-    const result = await providerService.updateOrderStatus(id as string, req.body);
+    const result = await mealService.updateOrderStatus(id as string, req.body);
+    res.status(200).json({
+    success: true,
+    data: result
+  })
+  } catch (error) {
+    res.status(500).json({
+    success: false,
+    details: error
+   })
+  }
+}
+
+const getAllCategories: RequestHandler = async(req, res)=>{
+  try {
+    const result = await mealService.getAllCategories();
     res.status(200).json({
     success: true,
     data: result
@@ -103,8 +132,10 @@ const updateOrderStatus:RequestHandler = async(req, res)=>{
 
 export const mealsController = {
   createMeals,
+  getAllMeals,
   getMealById,
   deleteMeal,
   updateMale,
   updateOrderStatus,
+  getAllCategories,
 }
