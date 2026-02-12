@@ -27,16 +27,23 @@ const createMeals: RequestHandler = async(req, res)=>{
 }
 const getAllMeals: RequestHandler = async(req, res)=>{
   try {
-    const result = await mealService.getAllMeals();
+    const search = typeof req.query.search === "string" ? req.query.search : undefined;
+    const minPrice = req.query.minPrice ? Number(req.query.minPrice) : undefined;
+    const maxPrice = req.query.maxPrice ? Number(req.query.maxPrice) : undefined;
+    const bestSelling = req.query.bestSelling === "true";
+    const filters = { search, minPrice, maxPrice, bestSelling };
+    const result = await mealService.getAllMeals(filters);
+
     res.status(200).json({
-    success: true,
-    data: result
-  })
+      success: true,
+      data: result,
+    });
   } catch (error) {
+    console.error(error);
     res.status(500).json({
-    success: false,
-    details: error
-   })
+      success: false,
+      details: error,
+    });
   }
 }
 const getMealById:RequestHandler = async(req, res)=>{
@@ -128,6 +135,20 @@ const getAllCategories: RequestHandler = async(req, res)=>{
    })
   }
 }
+const getAllDietaryPreference: RequestHandler = async(req, res)=>{
+  try {
+    const result = await mealService.getAllDietaryPreference();
+    res.status(200).json({
+    success: true,
+    data: result
+  })
+  } catch (error) {
+    res.status(500).json({
+    success: false,
+    details: error
+   })
+  }
+}
 
 
 export const mealsController = {
@@ -138,4 +159,5 @@ export const mealsController = {
   updateMale,
   updateOrderStatus,
   getAllCategories,
+  getAllDietaryPreference,
 }

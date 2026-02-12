@@ -1,6 +1,8 @@
-import { Category } from "../../generated/prisma/enums";
+
+import { Category, DietaryPreference } from "../../generated/prisma/enums";
+import type { MealWhereInput } from "../../generated/prisma/models";
 import { prisma } from "../../lib/prisma";
-import type { Meal } from "../../types/meal.type";
+import type { Meal, MealFilterPayload } from "../../types/meal.type";
 
 
 
@@ -13,12 +15,51 @@ const createMeals = async(data: Meal, providerId: string)=>{
    return result;
 }
 
-const getAllMeals = async()=>{
-  const result = await prisma.meal.findMany({
-    orderBy: { createdAt: "desc" }
+const getAllMeals = async (filters: MealFilterPayload) => {
+const { search, minPrice, maxPrice, bestSelling } = filters;
+  const addSearchContent: any[] = [];
+
+  if (search) {
+    const matchedCategory = Object.values(Category).find(
+      (cat) => cat.toLowerCase() === search.toLowerCase()
+    );
+
+    const matchedDietary = Object.values(DietaryPreference).find(
+      (diet) => diet.toLowerCase() === search.toLowerCase()
+    );
+
+    addSearchContent.push({
+      OR: [
+        { title: { contains: search, mode: "insensitive" } },
+        ...(matchedCategory ? [{ category: matchedCategory }] : []),
+        ...(matchedDietary ? [{ dietary: matchedDietary }] : []),
+      ],
+    });
+  }
+  const priceFilter: any = {};
+  if (minPrice !== undefined || maxPrice !== undefined) {
+    priceFilter.price = {
+      gte: minPrice ?? 0,
+      lte: maxPrice ?? 999999,
+    };
+  }
+
+  const meals = await prisma.meal.findMany({
+    where: { AND: [...addSearchContent, priceFilter] },
+    include: { _count: { select: { orders: true } } }, 
+    orderBy: { createdAt: "desc" },
   });
-  return result;
-}
+
+  const filteredMeals = bestSelling
+    ? meals.filter((meal) => meal._count.orders >= 5)
+    : meals;
+
+  return filteredMeals;
+};
+
+
+
+
 const getMealById = async(id: string)=>{
   const mealData = await prisma.meal.findUniqueOrThrow({
     where: {
@@ -92,6 +133,10 @@ const getAllCategories = async()=>{
   const result = Object.values(Category);
   return result;
 }
+const getAllDietaryPreference = async()=>{
+  const result = Object.values(DietaryPreference);
+  return result;
+}
 
 
 
@@ -103,4 +148,5 @@ export const mealService = {
   updateMale,
   updateOrderStatus,
   getAllCategories,
+  getAllDietaryPreference,
 }

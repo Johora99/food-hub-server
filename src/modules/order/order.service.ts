@@ -2,44 +2,61 @@ import { prisma } from "../../lib/prisma";
 import type { CreateOrderPayload } from "../../types/order.type"
 
 
-const createOrder = async(payload: CreateOrderPayload, customerId: string)=>{
+const createOrder = async (
+  payload: CreateOrderPayload,
+  customerId: string
+) => {
   const meal = await prisma.meal.findUnique({
     where: { id: payload.mealId },
   });
 
- if (!meal) {
+  if (!meal) {
     throw new Error("Meal not found");
   }
 
+  if (meal.quantity < payload.quantity) {
+    throw new Error("Not enough stock available");
+  }
   const totalPrice = meal.price * payload.quantity;
+  const result = await prisma.$transaction(async (tx) => {
+    const order = await tx.order.create({
+      data: {
+        quantity: payload.quantity,
+        address: payload.address,
+        phone: payload.phone,
+        paymentStatus: payload.paymentStatus,
+        totalPrice,
 
-   const result = await prisma.order.create({
-    data: {
-      quantity: payload.quantity,
-      address: payload.address,
-      phone: payload.phone,
-      paymentStatus: payload.paymentStatus,
-      totalPrice, 
+        meal: {
+          connect: { id: payload.mealId },
+        },
+        customer: {
+          connect: { id: customerId },
+        },
+        provider: {
+          connect: { id: meal.providerId },
+        },
+      },
+      include: {
+        meal: true,
+        provider: true,
+        customer: true,
+      },
+    });
+    await tx.meal.update({
+      where: { id: payload.mealId },
+      data: {
+        quantity: {
+          decrement: payload.quantity,
+        },
+      },
+    });
 
-      // 🔗 Relations
-      meal: {
-        connect: { id: payload.mealId },
-      },
-      customer: {
-        connect: { id: customerId },
-      },
-      provider: {
-        connect: { id: meal.providerId },
-      },
-    },
-    include: {
-      meal: true,
-      provider: true,
-      customer: true,
-    },
+    return order;
   });
-   return result
-}
+
+  return result;
+};
 
 
 const getOrders = async(userId: string, role: string)=>{

@@ -18,6 +18,7 @@ model Meal {
   title       String   @db.VarChar(225)
   content     String   @db.Text
   category    Category
+  dietary     DietaryPreference
   price       Int
   image       String
   quantity    Int  @default(1)
@@ -46,6 +47,16 @@ enum Category {
   Korean
   MiddleEastern
   Continental
+}
+enum DietaryPreference {
+  VEGAN
+  VEGETARIAN
+  HALAL
+  KETO
+  GLUTEN_FREE
+  DAIRY_FREE
+  LOW_CARB
+  PALEO
 }
 
 model User {
