@@ -9,15 +9,15 @@ import { mealRoute } from "./modules/meal/meal.route";
 
 
 const app = express();
-app.all("/api/auth/*splat", toNodeHandler(auth));
+
 
 app.use(express.json());
 app.use(cors({
-  origin: process.env.FRONTEND_URL || "http://localhost:3000 ",
+  origin: process.env.FRONTEND_URL || "http://localhost:3000",
   credentials: true
 }))
 
-
+app.all("/api/auth/*splat", toNodeHandler(auth));
 app.get('/', (req, res)=>{
   res.send("Hello world")
 })

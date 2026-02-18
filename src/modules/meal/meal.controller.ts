@@ -28,10 +28,11 @@ const createMeals: RequestHandler = async(req, res)=>{
 const getAllMeals: RequestHandler = async(req, res)=>{
   try {
     const search = typeof req.query.search === "string" ? req.query.search : undefined;
+    const dietary = typeof req.query.dietary === "string" ? req.query.dietary : undefined;
     const minPrice = req.query.minPrice ? Number(req.query.minPrice) : undefined;
     const maxPrice = req.query.maxPrice ? Number(req.query.maxPrice) : undefined;
     const bestSelling = req.query.bestSelling === "true";
-    const filters = { search, minPrice, maxPrice, bestSelling };
+    const filters = { search, dietary, minPrice, maxPrice, bestSelling };
     const result = await mealService.getAllMeals(filters);
 
     res.status(200).json({

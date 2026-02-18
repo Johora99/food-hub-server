@@ -16,46 +16,53 @@ const createMeals = async(data: Meal, providerId: string)=>{
 }
 
 const getAllMeals = async (filters: MealFilterPayload) => {
-const { search, minPrice, maxPrice, bestSelling } = filters;
-  const addSearchContent: any[] = [];
+  const { search, dietary, minPrice, maxPrice, bestSelling } = filters;
+
+  const ANDConditions: any[] = [];
 
   if (search) {
     const matchedCategory = Object.values(Category).find(
       (cat) => cat.toLowerCase() === search.toLowerCase()
     );
-
-    const matchedDietary = Object.values(DietaryPreference).find(
-      (diet) => diet.toLowerCase() === search.toLowerCase()
-    );
-
-    addSearchContent.push({
-      OR: [
-        { title: { contains: search, mode: "insensitive" } },
-        ...(matchedCategory ? [{ category: matchedCategory }] : []),
-        ...(matchedDietary ? [{ dietary: matchedDietary }] : []),
-      ],
-    });
+    if (matchedCategory) {
+      ANDConditions.push({ category: matchedCategory });
+    } else {
+      ANDConditions.push({
+        title: { contains: search, mode: "insensitive" },
+      });
+    }
   }
-  const priceFilter: any = {};
+
+  if (dietary) {
+    const matchedDietary = Object.values(DietaryPreference).find(
+      (diet) => diet.toLowerCase() === dietary.toLowerCase()
+    );
+    if (matchedDietary) {
+      ANDConditions.push({ dietary: matchedDietary });
+    }
+  }
+
   if (minPrice !== undefined || maxPrice !== undefined) {
-    priceFilter.price = {
-      gte: minPrice ?? 0,
-      lte: maxPrice ?? 999999,
-    };
+    ANDConditions.push({
+      price: {
+        gte: minPrice ?? 0,
+        lte: maxPrice ?? 999999,
+      },
+    });
   }
 
   const meals = await prisma.meal.findMany({
-    where: { AND: [...addSearchContent, priceFilter] },
-    include: { _count: { select: { orders: true } } }, 
+    where: { AND: ANDConditions },
+    include: { _count: { select: { orders: true } } },
     orderBy: { createdAt: "desc" },
   });
 
-  const filteredMeals = bestSelling
+  return bestSelling
     ? meals.filter((meal) => meal._count.orders >= 5)
     : meals;
-
-  return filteredMeals;
 };
+
+
 
 
 
