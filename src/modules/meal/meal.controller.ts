@@ -47,6 +47,30 @@ const getAllMeals: RequestHandler = async(req, res)=>{
     });
   }
 }
+
+const getMyMeals: RequestHandler = async(req, res)=>{
+   try {
+    if(!req.user){
+    return res.status(400).json({
+    success: false,
+    message: "Unauthorized"
+   })
+  }
+  console.log(req.user.id)
+    const result = await mealService.getMyMeals(req.user.id as string);
+    res.status(200).json({
+    success: true,
+    data: result
+    })
+   } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      success: false,
+      details: error,
+    });
+   }
+}
+
 const getMealById:RequestHandler = async(req, res)=>{
   try {
       if(!req.user){
@@ -73,7 +97,7 @@ const getMealById:RequestHandler = async(req, res)=>{
 const deleteMeal:RequestHandler = async(req, res)=>{
  try {
   const {id} = req.params;
-  const result = await mealService.deleteMeal(id as string);
+  const result = await mealService.deleteMeal(id as string, req.user?.id as string);
   res.status(200).json({
     success: true,
     message: "Meal deleted successfully.",
@@ -91,7 +115,7 @@ const deleteMeal:RequestHandler = async(req, res)=>{
 const updateMale:RequestHandler = async(req, res) =>{
   try {
     const {id} = req.params;
-    const result = await mealService.updateMale(id as string, req.body);
+    const result = await mealService.updateMale(id as string, req.body, req.user?.id as string);
     res.status(200).json({
     success: true,
     message: "Meal updated successfully",
@@ -155,6 +179,7 @@ const getAllDietaryPreference: RequestHandler = async(req, res)=>{
 export const mealsController = {
   createMeals,
   getAllMeals,
+  getMyMeals,
   getMealById,
   deleteMeal,
   updateMale,

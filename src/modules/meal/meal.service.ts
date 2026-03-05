@@ -1,6 +1,5 @@
 
 import { Category, DietaryPreference } from "../../generated/prisma/enums";
-import type { MealWhereInput } from "../../generated/prisma/models";
 import { prisma } from "../../lib/prisma";
 import type { Meal, MealFilterPayload } from "../../types/meal.type";
 
@@ -62,7 +61,14 @@ const getAllMeals = async (filters: MealFilterPayload) => {
     : meals;
 };
 
-
+const getMyMeals = async (id: string)=>{
+ return await prisma.meal.findMany({
+  where: {
+    providerId: id
+  },
+  orderBy: { createdAt: "desc" },
+ })
+}
 
 
 
@@ -90,28 +96,33 @@ const getMealById = async(id: string)=>{
 
 }
 
-const deleteMeal = async(id: string)=>{
+const deleteMeal = async(id: string, userId: string)=>{
   const mealData = await prisma.meal.findUniqueOrThrow({
     where: {
       id: id
     },
     select: {
-    id: true
+    id: true,
+    providerId: true
   }
   });
   if(!mealData){
     throw new Error("Your provided data is invalid");
   }
+  if (mealData.providerId !== userId) {
+    throw new Error("You are not authorized to delete this meal");
+  }
   const result = await prisma.meal.delete({
     where: {
-      id: id
+      id: id,
+      providerId: userId,
     }
   })
   return result;
 
 }
 
-const updateMale = async(id: string, data: Partial<Meal>)=>{
+const updateMale = async(id: string, data: Partial<Meal>, userId: string)=>{
   const mealData = await prisma.meal.findUnique({
     where: {
       id: id
@@ -120,9 +131,13 @@ const updateMale = async(id: string, data: Partial<Meal>)=>{
   if(!mealData){
     throw new Error("Your provided data is invalid");
   }
+  if (mealData.providerId !== userId) {
+    throw new Error("You are not authorized to update this meal");
+  }
     const result = await prisma.meal.update({
       where: {
-        id: id
+        id: id,
+        providerId: userId
       },
       data
     })
@@ -150,6 +165,7 @@ const getAllDietaryPreference = async()=>{
 export const mealService = {
   createMeals,
   getAllMeals,
+  getMyMeals,
   getMealById,
   deleteMeal,
   updateMale,
